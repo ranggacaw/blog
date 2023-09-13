@@ -25,8 +25,8 @@
                             <div class="entry-meta">
                                 <ul>
                                     <li><i class="icon-calendar3"></i> {{$item->created_at}}</li>
-                                    <li><a href="#"><i class="icon-user"></i> admin</a></li>
-                                    <li><a href="blog-single.html#comments"><i class="icon-comments"></i> 13 Comments</a></li>
+                                    <li><a href="#"><i class="icon-user"></i> {{$user->name}}</a></li>
+                                    <li><a href="blog-single.html#comments"><i class="icon-comments"></i> {{$item->comments_count}} Comments</a></li>
                                 </ul>
                             </div>
                             <div class="entry-content">

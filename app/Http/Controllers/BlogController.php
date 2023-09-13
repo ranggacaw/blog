@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
+use App\Models\Comment;
+use App\Models\TagPost;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,16 +15,41 @@ class BlogController extends Controller
 {
     public function index()
     {
-        $blogs = Blog::paginate(3);
-        
-        return view('blog.index', compact('blogs'));
+        $blogs = Blog::withCount('comments')->paginate(3); //cara ngitung koment, antara relasi model Blog dengan Comment
+        $user = User::where('id', 1)->first();
+        $tags = TagPost::all();
+
+        return view('blog.index', compact('blogs', 'user', 'tags'));
     }
 
     public function details($id)
     {
         $blogs = Blog::where('id', $id)->first();
+        $user = User::where('id', 1)->first();
+        $comment_count = Comment::where('blog_id', $blogs->id)->count();
+        $comments = Blog::where('id', $id)->first()->comments;
+        $tags = TagPost::all();
 
-        return view('blog.details', compact('blogs'));
+        return view('blog.details', compact('blogs', 'user', 'comments', 'comment_count', 'tags'));
+    }
+
+    public function detailsStore(Request $request, $id)
+    {
+        $blogs = Blog::where('id', $id)->first();
+        $user = User::where('id', Auth::user()->id)->first();
+        $comments = new Comment;
+
+        $comments->name = $request->name;
+        $comments->email = $request->email;
+        $comments->website = $request->website;
+        $comments->comment = $request->comment;
+        $comments->user_id = $user->id;
+        $comments->blog_id = $blogs->id;
+        $comments->save();
+
+
+        Alert::success('Success', 'Comment has been Realese!');
+        return redirect('blog-details/'.$blogs->id);
     }
 
     public function create()
@@ -44,7 +71,7 @@ class BlogController extends Controller
         $blogs->title = $request->title;
 
         libxml_use_internal_errors(true);
-    
+
         // Save Description for Sumernote
         if (!empty($request->content )) 
         {
@@ -78,6 +105,14 @@ class BlogController extends Controller
         $blogs->content = $description;
         $blogs->save();
 
+        // data tags input di masukan ke dalam database TagPost
+        $input = $request->all();
+        $tags = explode(",", $request->tags);
+        $post = TagPost::create($input);
+        $post->title = $request->title;
+        $post->content = $description;
+        $post->tag($tags);
+        
         Alert::success('Success', 'New blog has been Realese!');
         return redirect('blog-create');
     }
