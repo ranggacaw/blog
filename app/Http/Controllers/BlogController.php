@@ -27,7 +27,7 @@ class BlogController extends Controller
         $blogs = Blog::where('id', $id)->first();
         $user = User::where('id', 1)->first();
         $comment_count = Comment::where('blog_id', $blogs->id)->count();
-        $comments = Blog::where('id', $id)->first()->comments;
+        $comments = Blog::where('id', $id)->first()->comments; // ngambil comment hasmany yg ada di model, jadi 1 blog berisi banyak comment
         $tags = TagPost::all();
 
         return view('blog.details', compact('blogs', 'user', 'comments', 'comment_count', 'tags'));
